@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">GitHub User Search</string>
+    <string name="desc_avatar">Avatar</string>
+    <string name="menu_search">Search</string>
+    <string name="hint_search_users">Search Users</string>
+    <string name="title_app">GitHub Users</string>
+    <string name="no_users_found">No users found</string>
+    <string name="no_users_found_desc">No users matched your search. Please try a different keyword.</string>
+    <string name="welcome_title">Welcome</string>
+    <string name="welcome_desc">Enter a keyword to search for users.</string>
 </resources>
