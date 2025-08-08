@@ -1,4 +1,4 @@
-package com.riky.githubusersearch.presentation.main.adapter
+package com.riky.githubusersearch.presentation.ui.main.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

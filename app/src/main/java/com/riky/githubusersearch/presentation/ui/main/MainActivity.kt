@@ -1,4 +1,4 @@
-package com.riky.githubusersearch.presentation.main
+package com.riky.githubusersearch.presentation.ui.main
 
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
@@ -15,7 +15,7 @@ import com.riky.githubusersearch.databinding.ActivityMainBinding
 import com.riky.githubusersearch.domain.model.User
 import com.riky.githubusersearch.external.extension.visible
 import com.riky.githubusersearch.external.helper.SystemHelper
-import com.riky.githubusersearch.presentation.main.adapter.UserAdapter
+import com.riky.githubusersearch.presentation.ui.main.adapter.UserAdapter
 import com.riky.githubusersearch.presentation.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
