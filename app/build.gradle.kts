@@ -44,7 +44,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
@@ -83,6 +82,8 @@ dependencies {
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.arch.core.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
