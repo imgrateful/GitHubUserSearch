@@ -32,6 +32,13 @@ class DetailUserActivity : AppCompatActivity() {
     private lateinit var adapter: KeyValueAdapter
     private val viewModel: DetailViewModel by viewModels()
 
+    private var username: String? = null
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        username?.let { outState.putString(EXTRA_USERNAME, it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -39,31 +46,55 @@ class DetailUserActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupInsets()
+        setupSaveInstance(savedInstanceState)
         setupActionListener()
         setupRecyclerView()
         observeViewModel()
-        getUserDetail()
+        restoreOrLoadUserDetail()
     }
 
     /**
-     * Retrieves the username from the intent extras and requests user details from the ViewModel.
+     * Restores the username from a previously saved instance state, if available.
      *
-     * If the username is missing or empty, a toast message is shown and the activity finishes early.
-     * If valid, the loading indicator is displayed and the data request is initiated.
+     * This method should be called early in the activity lifecycle (e.g., in [onCreate])
+     * to ensure that the username value is preserved across configuration changes
+     * such as screen rotations.
+     *
+     * @param savedInstanceState The [Bundle] containing the saved state from a previous
+     *                           instance of this activity, or null if this is the first creation.
      */
-    private fun getUserDetail() {
-        val username = intent.getStringExtra(EXTRA_USERNAME).orEmpty()
-        if (username.isEmpty()) {
-            Toast.makeText(
-                this,
-                getString(R.string.error_username_is_missing),
-                Toast.LENGTH_SHORT
-            ).show()
-            finish()
-            return
+    private fun setupSaveInstance(savedInstanceState: Bundle?) {
+        username = savedInstanceState?.getString(EXTRA_USERNAME)
+    }
+
+    /**
+     * Decides whether to restore the username from saved state or load it from intent.
+     * If username is invalid, shows an error and closes the activity.
+     */
+    private fun restoreOrLoadUserDetail() {
+        if (username.isNullOrEmpty()) {
+            // First time load, get from intent
+            val nameFromIntent = intent.getStringExtra(EXTRA_USERNAME).orEmpty()
+            if (nameFromIntent.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    getString(R.string.error_username_is_missing),
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+                return
+            }
+            username = nameFromIntent
         }
+        getUserDetail(username!!)
+    }
+
+    /**
+     * Requests user details from the ViewModel for the given username.
+     */
+    private fun getUserDetail(name: String) {
         showLoading(true)
-        viewModel.loadUser(username)
+        viewModel.loadUser(name)
     }
 
     /**
