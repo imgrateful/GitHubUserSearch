@@ -1,9 +1,10 @@
 package com.riky.githubusersearch.presentation.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
@@ -14,9 +15,9 @@ import com.riky.githubusersearch.R
 import com.riky.githubusersearch.databinding.ActivityMainBinding
 import com.riky.githubusersearch.domain.model.User
 import com.riky.githubusersearch.external.extension.visible
+import com.riky.githubusersearch.external.helper.NotificationPermissionHelper
 import com.riky.githubusersearch.external.helper.SystemHelper
 import com.riky.githubusersearch.presentation.nav.ActivityNavigation
-import com.riky.githubusersearch.presentation.ui.detail.DetailUserActivity
 import com.riky.githubusersearch.presentation.ui.main.adapter.UserAdapter
 import com.riky.githubusersearch.presentation.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +33,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: UserAdapter
     private val viewModel: SearchViewModel by viewModels()
 
+    /**
+     * Activity Result launcher for requesting the POST_NOTIFICATIONS permission.
+     *
+     * This launcher is used together with [NotificationPermissionHelper.requestNotificationPermissionIfNeeded]
+     * to prompt the user for the notification permission on Android 13+.
+     */
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        onNotificationPermissionResult(isGranted)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupSearchInput()
         observeViewModel()
+        maybeRequestNotificationPermission()
     }
 
     /**
@@ -164,5 +178,39 @@ class MainActivity : AppCompatActivity() {
         binding.itemMessage.desc.text = desc
         binding.itemMessage.root.visible(true)
         binding.loading.visible(false)
+    }
+
+    /**
+     * Checks whether the app has the POST_NOTIFICATIONS permission and, if not,
+     * triggers a permission request using the registered launcher.
+     *
+     * Call this when you reach a sensible point in the UX (e.g., first app open,
+     * after user completes onboarding, or right before showing a feature that
+     * benefits from notifications).
+     */
+    private fun maybeRequestNotificationPermission() {
+        // If already granted (or device < Android 13), do nothing.
+        if (NotificationPermissionHelper.isNotificationPermissionGranted(this)) return
+
+        // Otherwise, request it through the helper (Android 13+ only).
+        NotificationPermissionHelper.requestNotificationPermissionIfNeeded(
+            activity = this,
+            launcher = notificationPermissionLauncher
+        )
+    }
+
+    /**
+     * Handles the result of the POST_NOTIFICATIONS permission request.
+     *
+     * @param isGranted True if the permission was granted, false otherwise.
+     *
+     * You can hook analytics or user feedback here, or disable notification-related
+     * features gracefully if the permission is denied.
+     */
+    private fun onNotificationPermissionResult(isGranted: Boolean) {
+        if (!isGranted) {
+            // Permission denied: consider showing a rationale/toast, or a non-intrusive UI hint.
+            Toast.makeText(this, "Notifications are disabled", Toast.LENGTH_SHORT).show()
+        }
     }
 }
