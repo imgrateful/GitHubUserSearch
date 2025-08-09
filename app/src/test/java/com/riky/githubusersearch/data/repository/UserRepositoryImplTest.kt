@@ -7,13 +7,11 @@ import com.riky.githubusersearch.data.model.UserDetailResponse
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
-@ExperimentalCoroutinesApi
 class UserRepositoryImplTest {
 
     private lateinit var api: GitHubApiService
@@ -23,42 +21,55 @@ class UserRepositoryImplTest {
     @Before
     fun setup() {
         api = mockk()
-        dao = mockk()
+        dao = mockk(relaxed = true)
         repo = UserRepositoryImpl(api, dao)
     }
 
     @Test
-    fun `getUserDetail returns detail from API and fallback to DB on error`() = runTest {
-        val username = "octocat"
-        val dummyApiDetail = UserDetailResponse(
+    fun `getUserDetail - API success returns API data and caches`() = runTest {
+        val username = "rikyaf"
+
+        val apiDetail = UserDetailResponse(
             id = 1,
             login = username,
-            avatarUrl = "url",
-            bio = "api bio"
+            avatarUrl = "https://avatars.githubusercontent.com/u/1",
+            bio = "api bio",
+            name = "Mr. Google",
+            company = "GitHub",
+            htmlUrl = "https://github.com/rikyaf",
         )
-        val dummyDbDetail = UserEntity(
+
+        coEvery { api.getUserDetail(username) } returns apiDetail
+
+        val result = repo.getUserDetail(username)
+
+        assertEquals(username, result.username)
+        assertEquals("api bio", result.bio)       // <- data dari API
+        coVerify(exactly = 1) { api.getUserDetail(username) }
+        coVerify(exactly = 1) { dao.insertUsers(any()) } // cached
+    }
+
+    @Test
+    fun `getUserDetail - API error falls back to DB`() = runTest {
+        val username = "rikyaf"
+
+        val dbDetail = UserEntity(
             id = 1,
             username = username,
-            avatarUrl = "url",
-            bio = "db bio"
+            avatarUrl = "https://avatars.githubusercontent.com/u/1",
+            bio = "db bio",
+            name = "Mr. Google",
+            company = "Cached Inc",
+            htmlUrl = "https://github.com/rikyaf",
         )
 
-        // Success case: API returns data
-        coEvery { api.getUserDetail(username) } returns dummyApiDetail
-        coEvery { dao.getUserDetail(username) } returns dummyDbDetail
+        coEvery { api.getUserDetail(username) } throws RuntimeException("network error")
+        coEvery { dao.getUserDetail(username) } returns dbDetail
 
-        val resultApi = repo.getUserDetail(username)
-        assertEquals(username, resultApi.username)
-        assertEquals("api bio", resultApi.bio)
-        coVerify { api.getUserDetail(username) }
+        val result = repo.getUserDetail(username)
 
-        // Fallback case: API throws error, use DB
-        coEvery { api.getUserDetail(username) } throws Exception("network error")
-        coEvery { dao.getUserDetail(username) } returns dummyDbDetail
-
-        val resultDb = repo.getUserDetail(username)
-        assertEquals(username, resultDb.username)
-        assertEquals("db bio", resultDb.bio)
-        coVerify { dao.getUserDetail(username) }
+        assertEquals(username, result.username)
+        assertEquals("db bio", result.bio)        // <- fallback dari DB
+        coVerify(exactly = 1) { dao.getUserDetail(username) }
     }
 }

@@ -8,4 +8,5 @@ data class UserDto(
     @Json(name = "id") val id: Int,
     @Json(name = "login") val login: String,
     @Json(name = "avatar_url") val avatarUrl: String,
+    @Json(name = "html_url") val htmlUrl: String
 )
