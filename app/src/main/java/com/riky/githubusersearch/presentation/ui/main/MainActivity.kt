@@ -15,6 +15,7 @@ import com.riky.githubusersearch.databinding.ActivityMainBinding
 import com.riky.githubusersearch.domain.model.User
 import com.riky.githubusersearch.external.extension.visible
 import com.riky.githubusersearch.external.helper.SystemHelper
+import com.riky.githubusersearch.presentation.nav.ActivityNavigation
 import com.riky.githubusersearch.presentation.ui.detail.DetailUserActivity
 import com.riky.githubusersearch.presentation.ui.main.adapter.UserAdapter
 import com.riky.githubusersearch.presentation.viewmodel.SearchViewModel
@@ -76,10 +77,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupRecyclerView() {
         adapter = UserAdapter { user ->
-            val intent = Intent(this, DetailUserActivity::class.java).apply {
-                putExtra(DetailUserActivity.EXTRA_USERNAME, user.username)
-            }
-            startActivity(intent)
+            ActivityNavigation.navigateToDetail(this, user.username)
         }
 
         binding.rvUsers.apply {
