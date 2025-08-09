@@ -1,8 +1,8 @@
 package com.riky.githubusersearch.presentation.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.annotation.DrawableRes
@@ -15,6 +15,7 @@ import com.riky.githubusersearch.databinding.ActivityMainBinding
 import com.riky.githubusersearch.domain.model.User
 import com.riky.githubusersearch.external.extension.visible
 import com.riky.githubusersearch.external.helper.SystemHelper
+import com.riky.githubusersearch.presentation.ui.detail.DetailUserActivity
 import com.riky.githubusersearch.presentation.ui.main.adapter.UserAdapter
 import com.riky.githubusersearch.presentation.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -75,7 +76,10 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupRecyclerView() {
         adapter = UserAdapter { user ->
-            Toast.makeText(this, "Selected: ${user.username}", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, DetailUserActivity::class.java).apply {
+                putExtra(DetailUserActivity.EXTRA_USERNAME, user.username)
+            }
+            startActivity(intent)
         }
 
         binding.rvUsers.apply {

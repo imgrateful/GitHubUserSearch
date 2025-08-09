@@ -8,4 +8,5 @@
     <string name="no_users_found_desc">No users matched your search. Please try a different keyword.</string>
     <string name="welcome_title">Welcome</string>
     <string name="welcome_desc">Enter a keyword to search for users.</string>
+    <string name="error_username_is_missing">Username is missing</string>
 </resources>
